@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+    nginx:
+        container_name: dev-nginx
+        build: ./nginx
+        image: dante-light/nginx:latest
+        ports:
+            - "80:80" #配置映射端口，默认为映射到宿主机80端口，如果需要映射到8080端口，可以修改为8080:80
+        volumes:
+            - ./test:/data/www/test
+        networks:
+            - common-network
+
+    phpfpm:
+        container_name: dev-phpfpm
+        build: ./php #如果有扩展需要安装，在./php/Dockerfile里配置
+        image: dante-light/php:latest
+        volumes:
+            - ./test:/data/www/test
+        networks:
+            - common-network
+
+    mysql:
+        container_name: dev-mysql
+        build: ./mysql
+        image: dante-light/mysql:latest
+        volumes:
+            - "./mysql/data:/var/lib/mysql:rw"
+        environment:
+            MYSQL_ROOT_PASSWORD: root #root用户密码
+            MYSQL_DATABASE: docker #默认创建的数据库，MYSQL_USER创建的用户对此数据库有all权限，输入项目需要的数据库名
+            MYSQL_USER: docker #默认创建的用户，输入项目需要的用户
+            MYSQL_PASSWORD: docker #默认创建的用户密码，输入项目需要的用户密码
+        ports:
+            - "3306:3306" #数据库映射端口，如果本地3306端口已被占用，可以改为33060:3306之类
+        networks:
+            - common-network
+
+networks:
+    common-network:
